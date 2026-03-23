@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "url": "https://localhost:3000/dashboard"
+      }
+    },
+    "condition": {
+      "regexFilter": "^https://meet\\.jit\\.si/static/close3\\.html(?:\\?.*)?$",
+      "resourceTypes": ["main_frame"]
+    }
+  }
+]

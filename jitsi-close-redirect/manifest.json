@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Redirect Jitsi close3.html → localhost",
+  "version": "1.0",
+  "description": "Redirect https://meet.jit.si/static/close3.html to http://localhost:3000 for local development.",
+  "permissions": [
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "https://meet.jit.si/*",
+    "http://localhost:3000/*",
+    "https://localhost:3000/*"
+  ],
+  "action": {},
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  }
+}
