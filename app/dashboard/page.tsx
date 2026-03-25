@@ -243,14 +243,12 @@ export default function DashboardPage() {
             </div>
 
             <Dialog>
-              <DialogTrigger asChild>
-                <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 cursor-pointer hover:shadow-xl hover:border-emerald-200 dark:hover:border-emerald-900/50 hover:scale-[1.02] transition-all duration-300 group">
-                  <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 transition-colors">
-                    <Settings className="w-5 h-5 text-emerald-500" />
-                  </div>
-                  <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-1">Join Room</h3>
-                  <p className="text-neutral-500 dark:text-neutral-400 text-xs">Enter via code or link</p>
+              <DialogTrigger className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-4 cursor-pointer hover:shadow-xl hover:border-emerald-200 dark:hover:border-emerald-900/50 hover:scale-[1.02] transition-all duration-300 group text-left">
+                <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 transition-colors">
+                  <Settings className="w-5 h-5 text-emerald-500" />
                 </div>
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white mb-1">Join Room</h3>
+                <p className="text-neutral-500 dark:text-neutral-400 text-xs text-left">Enter via code or link</p>
               </DialogTrigger>
               <DialogContent className="sm:max-w-md bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
                 <DialogHeader>

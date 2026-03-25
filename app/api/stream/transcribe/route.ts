@@ -6,7 +6,7 @@ import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { Pipeline } from 'stream';
+import { pipeline } from 'stream';
 import { promisify } from 'util';
 
 // Set the path to the ffmpeg binary
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
                 ])
                 .save(mp3Path)
                 .on('end', () => resolve(true))
-                .on('error', (err) => reject(err));
+                .on('error', (err: Error) => reject(err));
         });
         console.log(`[Transcribe] Audio extraction complete.`);
 

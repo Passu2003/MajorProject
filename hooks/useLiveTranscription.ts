@@ -98,19 +98,33 @@ export function useLiveTranscription({
     useEffect(() => { isDubbedModeRef.current = isDubbedMode; }, [isDubbedMode]);
     useEffect(() => { isMicMutedRef.current = isMicMuted; }, [isMicMuted]);
 
-    // When mic is muted in Stream SDK, disable transcription mic tracks to truly stop capture.
-    // When unmuted, re-enable the tracks so recording continues.
+    // When mic is muted in Stream SDK, stop the media recorder AND release the mic stream 
+    // to prevent OS-level audio graph buffering anomalies with the Stream SDK.
     useEffect(() => {
-        if (!micStreamRef.current) return;
-        micStreamRef.current.getAudioTracks().forEach((track) => {
-            track.enabled = !isMicMuted;
-        });
         if (isMicMuted) {
-            console.log("[Transcription] Mic muted — pausing audio capture");
+            console.log("[Transcription] Mic muted — suspending and releasing mic stream");
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+                try { mediaRecorderRef.current.stop(); } catch(e) {}
+            }
+            if (micStreamRef.current) {
+                micStreamRef.current.getTracks().forEach(t => t.stop());
+                micStreamRef.current = null;
+            }
+            if (intervalRef.current) {
+                 clearInterval(intervalRef.current);
+                 intervalRef.current = null;
+             }
         } else {
-            console.log("[Transcription] Mic unmuted — resuming audio capture");
+            console.log("[Transcription] Mic unmuted");
+            // If they are supposed to be transcribing, re-acquire the stream and restart
+            if (isTranscribingRef.current && !micStreamRef.current) {
+                // We need to re-initiate the hardware capture so WebRTC doesn't glitch.
+                startRecordingSession();
+            }
         }
     }, [isMicMuted]);
+
+
 
     // Pre-create a persistent TTS audio element to avoid browser autoplay blocking.
     // This must be created once during a user gesture context.
@@ -323,45 +337,6 @@ export function useLiveTranscription({
                     });
                 }
 
-                // 5. Local TTS Playback (If dubbed mode is explicitly ON, hear your own translation)
-                if (isDubbedModeRef.current && localDisplayText) {
-                    console.log("[TTS SENDER] Generating TTS for:", localDisplayText);
-                    try {
-                        const ttsRes = await fetch("/api/stream/tts", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                text: localDisplayText,
-                                voice: "alloy",
-                            }),
-                        });
-
-                        if (ttsRes.ok) {
-                            const audioBlob = await ttsRes.blob();
-                            const audioUrl = URL.createObjectURL(audioBlob);
-
-                            const audio = ttsAudioRef.current || new Audio();
-                            audio.setAttribute("data-tts", "true");
-                            audio.pause();
-                            audio.src = audioUrl;
-                            audio.load();
-                            ttsAudioRef.current = audio;
-
-                            audio.onended = () => {
-                                URL.revokeObjectURL(audioUrl);
-                            };
-
-                            audio.play()
-                                .then(() => console.log("[TTS SENDER] Playback started"))
-                                .catch((e) => console.error("[TTS SENDER] Playback error:", e));
-                        } else {
-                            console.error("[TTS SENDER] API returned:", ttsRes.status);
-                        }
-                    } catch (e) {
-                        console.error("[TTS SENDER] Error:", e);
-                    }
-                }
-
             } catch (error) {
                 console.error("[Transcription] Process error:", error);
             } finally {
@@ -371,12 +346,10 @@ export function useLiveTranscription({
         [scheduleSubtitleClear]
     );
 
-    // Start transcription — acquires its own mic stream
-    const startTranscription = useCallback(async () => {
-        if (isTranscribingRef.current) return;
-
+    const startRecordingSession = useCallback(async () => {
         try {
-            // Get a dedicated mic stream for transcription
+            if (micStreamRef.current) return; // already running
+
             const micStream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: true,
@@ -387,14 +360,13 @@ export function useLiveTranscription({
 
             micStreamRef.current = micStream;
 
-            // Set up Voice Activity Detection using Web Audio API
             const audioCtx = new AudioContext();
             const source = audioCtx.createMediaStreamSource(micStream);
             const analyser = audioCtx.createAnalyser();
             analyser.fftSize = 2048;
             source.connect(analyser);
-            // Don't connect to destination — we just want to analyse, not play back
 
+            if (audioContextRef.current) audioContextRef.current.close().catch(() => {});
             audioContextRef.current = audioCtx;
             analyserRef.current = analyser;
             hasSpeechRef.current = false;
@@ -404,67 +376,64 @@ export function useLiveTranscription({
                 : "audio/webm";
 
             let chunks: Blob[] = [];
-
             const recorder = new MediaRecorder(micStream, { mimeType });
             mediaRecorderRef.current = recorder;
 
             recorder.ondataavailable = (e) => {
-                if (e.data && e.data.size > 0) {
-                    chunks.push(e.data);
-                }
+                if (e.data && e.data.size > 0) chunks.push(e.data);
             };
 
             recorder.onstop = () => {
-                // Only process if we detected speech AND mic is not muted in Stream SDK
                 const hadSpeech = hasSpeechRef.current;
                 const micMuted = isMicMutedRef.current;
-                hasSpeechRef.current = false; // Reset for next window
+                hasSpeechRef.current = false; 
 
                 if (chunks.length > 0 && hadSpeech && !micMuted) {
                     const blob = new Blob(chunks, { type: mimeType });
                     chunks = [];
-
-                    if (blob.size > 1000) {
-                        processChunk(blob);
-                    }
+                    if (blob.size > 1000) processChunk(blob);
                 } else {
                     chunks = [];
-                    if (micMuted) {
-                        console.log("[Transcription] Skipped chunk — mic is muted");
-                    } else if (!hadSpeech) {
-                        console.log("[Transcription] Skipped silent chunk");
-                    }
                 }
 
-                // Restart recorder if still transcribing
-                if (isTranscribingRef.current && mediaRecorderRef.current) {
-                    try {
-                        mediaRecorderRef.current.start();
-                    } catch (e) {
-                        console.warn("[Transcription] Could not restart recorder:", e);
-                    }
+                if (isTranscribingRef.current && mediaRecorderRef.current && !isMicMutedRef.current) {
+                    try { mediaRecorderRef.current.start(); } catch (e) {}
                 }
             };
 
-            // Start recording
             recorder.start();
-            isTranscribingRef.current = true;
-            setIsTranscribing(true);
-
-            console.log("[Transcription] Started — capturing mic audio in 5s chunks with VAD");
-
-            // Every 5 seconds, stop the recorder to flush a chunk
+            
+            if (intervalRef.current) clearInterval(intervalRef.current);
             intervalRef.current = setInterval(() => {
                 if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
                     mediaRecorderRef.current.stop();
                 }
-            }, 5000);
+            }, 2000);
 
         } catch (err) {
-            console.error("[Transcription] Failed to start:", err);
-            alert("Could not access microphone for live transcription.");
+            console.error("[Transcription] Failed to acquire mic stream:", err);
         }
     }, [processChunk]);
+
+    // Start transcription — toggles local state and initiates startRecordingSession
+    const startTranscription = useCallback(async () => {
+        if (isTranscribingRef.current) return;
+        isTranscribingRef.current = true;
+        setIsTranscribing(true);
+
+        console.log("[Transcription] Started — capturing mic audio in 2s chunks with VAD");
+
+        if (isMicMutedRef.current) {
+            try {
+                const { toast } = require("sonner");
+                toast.warning("Microphone is muted", {
+                    description: "Unmute your mic in the meeting controls to generate live subtitles."
+                });
+            } catch(e) {}
+        } else {
+            await startRecordingSession();
+        }
+    }, [startRecordingSession]);
 
     // Stop transcription
     const stopTranscription = useCallback(() => {

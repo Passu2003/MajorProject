@@ -30,7 +30,6 @@ export async function GET(req: Request) {
         return NextResponse.json({ 
             call_state: state.call,
             recordings: recordingsResponse.recordings,
-            session_id: state.call.session_id,
         });
 
     } catch (error: any) {

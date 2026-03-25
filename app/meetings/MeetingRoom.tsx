@@ -182,7 +182,7 @@ function CallLayout({ roomID, username, onLeave }: { roomID: string, username: s
     return (
         <div className="w-screen h-[100dvh] bg-neutral-950 flex flex-col text-white overflow-hidden relative str-video">
             <ResizablePanelGroup direction="horizontal">
-                <ResizablePanel defaultSize={75} minSize={50} className="relative flex flex-col">
+                <ResizablePanel defaultSize={isSidebarOpen ? 75 : 100} minSize={50} className="relative flex flex-col">
                     <div className="flex-1 w-full h-full relative bg-neutral-950 overflow-hidden">
                         <SpeakerLayout participantsBarPosition="bottom" />
                         
