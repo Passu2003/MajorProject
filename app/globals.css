@@ -149,3 +149,165 @@
     scrollbar-width: none;  /* Firefox */
   }
 }
+
+/* Stream Video SDK Custom Overrides - Device Settings Premium UI */
+
+/* 1. The main settings dialog wrapper */
+.str-video__device-settings {
+  background: #171717 !important; /* Neutral-900 */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  color: white !important;
+  width: 360px !important;
+  max-width: 90vw !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  font-family: inherit !important;
+}
+
+/* 2. Dialog Header (with title and close button) */
+.str-video__device-settings__header {
+  padding: 20px 24px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* 3. Section containers for Camera/Mic/Speaker */
+.str-video__device-settings__device-kind {
+  padding: 20px 24px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+.str-video__device-settings__device-kind:last-child {
+  border-bottom: none !important;
+}
+
+/* 4. Section Titles ("Select a Camera", etc.) */
+.str-video__device-settings__device-selector-title {
+  color: #a3a3a3 !important; /* Neutral-400 */
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 0 !important;
+}
+
+/* 5. Radio Button Option Row */
+.str-video__device-settings__option {
+  background: transparent !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  margin-top: 6px !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  font-size: 14px !important;
+  color: #e5e5e5 !important;
+  cursor: pointer !important;
+}
+
+.str-video__device-settings__option:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.str-video__device-settings__option--selected {
+  background: rgba(16, 185, 129, 0.08) !important; /* Emerald tint */
+  border: 1px solid rgba(16, 185, 129, 0.2) !important;
+  color: white !important;
+}
+
+/* 6. Custom Radio Buttons */
+.str-video__device-settings__option input[type=radio] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  min-width: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  border: 2px solid #525252 !important; /* Neutral-600 */
+  border-radius: 50% !important;
+  margin: 0 !important;
+  margin-right: 14px !important;
+  position: relative !important;
+  background: transparent !important;
+  transition: all 0.2s ease !important;
+  flex-shrink: 0 !important;
+  transform: none !important;
+}
+
+.str-video__device-settings__option input[type=radio]:checked {
+  border-color: #10b981 !important; /* Emerald-500 */
+  background: transparent !important;
+}
+
+.str-video__device-settings__option input[type=radio]:checked::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 8px !important;
+  height: 8px !important;
+  background: #10b981 !important;
+  border-radius: 50% !important;
+}
+
+.str-video__device-settings__option input[type=radio]:checked::before {
+  display: none !important; /* Hide original SDK before-element */
+}
+
+/* 7. Close button icon inside header */
+.str-video__device-settings__close-button {
+  color: #a3a3a3 !important;
+  transition: color 0.2s !important;
+}
+.str-video__device-settings__close-button:hover {
+  color: white !important;
+}
+
+/* 8. Setup UI Trigger Button (The 3rd button) visibility fix */
+.str-video__device-settings__button,
+.str-video__setup-device-settings-container > button {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 9999px !important;
+  padding: 12px 16px !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+}
+
+.str-video__device-settings__button:hover,
+.str-video__setup-device-settings-container > button:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Custom Stream SDK Icon replacement - We mandate the Settings Gear Icon from lucide */
+.str-video__device-settings__button .str-video__icon,
+.str-video__setup-device-settings-container > button .str-video__icon,
+.str-video__setup-device-settings-container > button > span,
+.str-video__setup-device-settings-container > button > div,
+.str-video__setup-device-settings-container > button > i {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E") !important;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E") !important;
+  background-color: white !important;
+  width: 22px !important;
+  height: 22px !important;
+  display: inline-block !important;
+  transform: none !important;
+  -webkit-mask-size: contain !important;
+  mask-size: contain !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+  -webkit-mask-position: center !important;
+  mask-position: center !important;
+}

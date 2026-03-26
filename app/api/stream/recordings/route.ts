@@ -26,10 +26,8 @@ export async function GET() {
         });
         console.log(`[Stream API] Found ${response.calls.length} total calls in the workspace.`);
 
-        // We need to iterate over calls and fetch their recordings
-        const allRecordings: any[] = [];
-        
-        for (const callData of response.calls) {
+        // We need to iterate over calls and fetch their recordings in parallel
+        const recordingPromises = response.calls.map(async (callData) => {
             try {
                 // Stream requires us to fetch recordings per call ID
                 const call = client.video.call('default', callData.call.id);
@@ -39,7 +37,7 @@ export async function GET() {
                 console.log(`[Stream API] Call ${callData.call.id} has ${recordingsResponse.recordings?.length || 0} recordings.`);
 
                 if (recordingsResponse.recordings && recordingsResponse.recordings.length > 0) {
-                    recordingsResponse.recordings.forEach((rec: any) => {
+                    return recordingsResponse.recordings.map((rec: any) => {
                         let durationStr = 'Cloud Recording';
                         if (rec.start_time && rec.end_time) {
                             const start = new Date(rec.start_time).getTime();
@@ -50,7 +48,7 @@ export async function GET() {
                             durationStr = `${mins}:${secs.toString().padStart(2, '0')}`;
                         }
 
-                        allRecordings.push({
+                        return {
                             id: rec.filename, // Stream returns a unique filename
                             url: rec.url,
                             title: `Recording - ${callData.call.id.slice(0, 16)}...`,
@@ -60,13 +58,18 @@ export async function GET() {
                             call_id: callData.call.id,
                             session_id: rec.session_id || callData.call.session?.id,
                             raw: null
-                        });
+                        };
                     });
                 }
+                return [];
             } catch (innerError) {
                 console.warn(`Failed to fetch recordings for call ${callData.call.id}:`, innerError);
+                return [];
             }
-        }
+        });
+
+        const nestedRecordings = await Promise.all(recordingPromises);
+        const allRecordings = nestedRecordings.flat();
 
         return NextResponse.json({ recordings: allRecordings });
     } catch (error) {

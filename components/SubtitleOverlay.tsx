@@ -28,20 +28,13 @@ export function SubtitleOverlay({ subtitles, isVisible }: SubtitleOverlayProps) 
 
     return (
         <div
+            className="fixed left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 w-full max-w-[95%] md:max-w-[80%] pointer-events-none transition-all duration-300"
             style={{
-                position: "absolute",
-                bottom: "100px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                zIndex: 60,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "6px",
-                maxWidth: "80%",
-                width: "max-content",
-                pointerEvents: "none",
-            }}
+                bottom: "calc(env(safe-area-inset-bottom) + 120px)",
+                "@media (min-width: 768px)": {
+                    bottom: "100px"
+                }
+            } as any}
         >
             {visibleEntries.map((entry, i) => (
                 <div

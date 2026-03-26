@@ -4,10 +4,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Search, Plus, Bot, Video, Film, Settings, LogOut, LayoutGrid } from "lucide-react"
+import { Search, Plus, Bot, Video, Film, Settings, LogOut, LayoutGrid, Menu, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { getRecordings } from "@/lib/db"
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import {
   Dialog,
   DialogContent,
@@ -26,9 +33,11 @@ export default function DashboardPage() {
   const [meetingTitle, setMeetingTitle] = useState("")
 
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchActivity() {
+      setIsLoading(true);
       try {
         // Fetch Call History and Cloud Recordings concurrently
         const [callsRes, apiRecsRes] = await Promise.all([
@@ -77,6 +86,8 @@ export default function DashboardPage() {
         setRecentActivity(merged);
       } catch (e) {
         console.error("Failed to load dashboard activity:", e);
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchActivity();
@@ -116,80 +127,109 @@ export default function DashboardPage() {
     router.push(`/meetings?room=${roomId}`);
   }
 
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-900">
+      {/* Logo */}
+      <div className="p-6 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Video className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400">
+            Meet.AI
+          </span>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-4 space-y-2">
+        <div className="px-4 py-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+          Menu
+        </div>
+        <Button
+          variant="ghost"
+          onClick={() => setActiveTab("meetings")}
+          className={`w-full justify-start gap-3 px-4 py-6 rounded-xl transition-all ${activeTab === "meetings"
+            ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 font-medium"
+            : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+            }`}
+        >
+          <LayoutGrid className="w-5 h-5" />
+          Dashboard
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={handleRecordings}
+          className="w-full justify-start gap-3 px-4 py-6 rounded-xl text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
+        >
+          <Film className="w-5 h-5" />
+          RecordingsLibrary
+        </Button>
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-3 px-4 py-6 rounded-xl text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
+        >
+          <Settings className="w-5 h-5" />
+          Settings
+        </Button>
+      </nav>
+
+      {/* User Profile */}
+      <div className="p-4 border-t border-neutral-100 dark:border-neutral-800">
+        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-colors group">
+          <Avatar className="w-10 h-10 border-2 border-white dark:border-neutral-700 shadow-sm group-hover:border-emerald-200 transition-colors">
+            <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-medium">JD</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold text-neutral-900 dark:text-white truncate">John Doe</div>
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">john.doe@example.com</div>
+          </div>
+          <LogOut className="w-4 h-4 text-neutral-400 group-hover:text-red-500 transition-colors" />
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex h-screen bg-neutral-50 dark:bg-neutral-950 font-sans">
-      {/* Sidebar */}
-      <div className="w-72 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 flex flex-col shadow-sm z-10 transition-all duration-300">
-        {/* Logo */}
-        <div className="p-6 border-b border-neutral-100 dark:border-neutral-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
-              <Video className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400">
-              Meet.AI
-            </span>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
-          <div className="px-4 py-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-            Menu
-          </div>
-          <Button
-            variant="ghost"
-            onClick={() => setActiveTab("meetings")}
-            className={`w-full justify-start gap-3 px-4 py-6 rounded-xl transition-all ${activeTab === "meetings"
-              ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400 font-medium"
-              : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
-              }`}
-          >
-            <LayoutGrid className="w-5 h-5" />
-            Dashboard
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={handleRecordings}
-            className="w-full justify-start gap-3 px-4 py-6 rounded-xl text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
-          >
-            <Film className="w-5 h-5" />
-            RecordingsLibrary
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3 px-4 py-6 rounded-xl text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
-          >
-            <Settings className="w-5 h-5" />
-            Settings
-          </Button>
-        </nav>
-
-        {/* User Profile */}
-        <div className="p-4 border-t border-neutral-100 dark:border-neutral-800">
-          <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer transition-colors group">
-            <Avatar className="w-10 h-10 border-2 border-white dark:border-neutral-700 shadow-sm group-hover:border-emerald-200 transition-colors">
-              <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-medium">JD</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-neutral-900 dark:text-white truncate">John Doe</div>
-              <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">john.doe@example.com</div>
-            </div>
-            <LogOut className="w-4 h-4 text-neutral-400 group-hover:text-red-500 transition-colors" />
-          </div>
-        </div>
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex w-72 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 flex-col shadow-sm z-10 transition-all duration-300">
+        <SidebarContent />
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-neutral-50/50 dark:bg-neutral-950">
-        {/* Header */}
-        <header className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-6 py-3 sticky top-0 z-20">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Good Morning, John</h1>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">Here's what's happening today</p>
+        {/* Mobile Header */}
+        <div className="lg:hidden flex items-center justify-between p-4 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Video className="w-4 h-4 text-white" />
             </div>
-            <div className="flex items-center gap-4">
+            <span className="text-lg font-bold text-neutral-900 dark:text-white">Meet.AI</span>
+          </div>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-xl">
+                <Menu className="w-6 h-6 text-neutral-600 dark:text-neutral-400" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-72 border-none">
+                <SheetHeader className="sr-only">
+                    <SheetTitle>Navigation Menu</SheetTitle>
+                </SheetHeader>
+              <SidebarContent />
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* Header (Desktop-ish) */}
+        <header className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-6 py-4 lg:py-3 sticky top-0 z-20">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-neutral-900 dark:text-white">Good Morning, John</h1>
+              <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400">Here&apos;s what&apos;s happening today</p>
+            </div>
+            <div className="flex items-center gap-3 md:gap-4 overflow-x-auto pb-1 md:pb-0">
               <div className="relative hidden md:block w-56">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-4 h-4" />
                 <Input
@@ -198,7 +238,7 @@ export default function DashboardPage() {
                 />
               </div>
               <Button
-                className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg h-10 hover:shadow-emerald-500/25 transition-all rounded-xl px-4"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg h-10 hover:shadow-emerald-500/25 transition-all rounded-xl px-4 flex-1 md:flex-none whitespace-nowrap"
                 onClick={openNewMeeting}
               >
                 <Plus className="w-5 h-5 mr-2" />
@@ -209,9 +249,9 @@ export default function DashboardPage() {
         </header>
 
         {/* Scrollable Content */}
-        <main className="flex-1 p-6 overflow-y-auto no-scrollbar">
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto no-scrollbar">
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
             <div
               onClick={openNewMeeting}
               className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-4 text-white cursor-pointer hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
@@ -340,7 +380,17 @@ export default function DashboardPage() {
 
             <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-sm">
               <div className="p-4 space-y-3">
-                {recentActivity.length > 0 ? recentActivity.map((activity, index) => (
+                {isLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12 gap-3">
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Video className="w-5 h-5 text-emerald-500/50" />
+                      </div>
+                    </div>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium animate-pulse">Syncing your activity...</p>
+                  </div>
+                ) : recentActivity.length > 0 ? recentActivity.map((activity, index) => (
                   <div
                     key={index}
                     onClick={() => {
@@ -348,27 +398,27 @@ export default function DashboardPage() {
                             router.push(`/history/${activity.id}`);
                         }
                     }}
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700/50 cursor-pointer"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-3 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700/50 cursor-pointer"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activity.type === 'recording'
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center shrink-0 ${activity.type === 'recording'
                         ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/20'
                         : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20'
                         }`}>
                         {activity.type === 'recording' ? <Film className="w-5 h-5" /> : <Video className="w-5 h-5" />}
                       </div>
-                      <div>
-                        <h4 className="font-semibold text-neutral-900 dark:text-white line-clamp-1 max-w-[200px] md:max-w-md" title={activity.title}>{activity.title}</h4>
-                        <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400">
-                          <span>{activity.date}</span>
-                          <span>•</span>
-                          <span>{activity.duration}</span>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-semibold text-neutral-900 dark:text-white truncate text-sm md:text-base" title={activity.title}>{activity.title}</h4>
+                        <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-sm text-neutral-500 dark:text-neutral-400">
+                          <span className="truncate">{activity.date}</span>
+                          <span className="hidden xs:inline">•</span>
+                          <span className="hidden xs:inline">{activity.duration}</span>
                           
                           {/* Mini Avatar Group */}
                           {activity.participants && activity.participants.length > 0 && (
                             <>
-                              <span>•</span>
-                              <div className="flex items-center -space-x-2">
+                              <span className="hidden sm:inline">•</span>
+                              <div className="hidden sm:flex items-center -space-x-2">
                                 {activity.participants.slice(0, 3).map((p: any, i: number) => (
                                   <div 
                                     key={i} 
@@ -393,16 +443,16 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 ml-12 sm:ml-0">
                       <Badge
                         variant="secondary"
-                        className={
+                        className={`text-[10px] md:text-xs px-2 py-0.5 ${
                           activity.status === "Active"
                             ? "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50 whitespace-nowrap animate-pulse"
                             : activity.status === "Saved"
                             ? "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800 whitespace-nowrap"
                             : "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800 whitespace-nowrap"
-                        }
+                        }`}
                       >
                         {activity.status === "Active" ? "● Active" : activity.status}
                       </Badge>
@@ -410,7 +460,7 @@ export default function DashboardPage() {
                         <Button
                             size="sm"
                             variant="outline"
-                            className="bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
+                            className="h-8 text-xs bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 router.push(`/meetings?room=${activity.id}`);
@@ -423,14 +473,14 @@ export default function DashboardPage() {
                         <Button
                             size="sm"
                             variant="outline"
-                            className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50 dark:hover:bg-emerald-900/40"
+                            className="h-8 text-xs bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50 dark:hover:bg-emerald-900/40"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 window.open(activity.recordingUrl, "_blank");
                             }}
                         >
-                            <Film className="w-3 h-3 mr-1.5" />
-                            Watch Recording
+                            <Film className="w-3 h-3 mr-1.5 hidden xs:inline" />
+                            Record
                         </Button>
                       )}
                     </div>

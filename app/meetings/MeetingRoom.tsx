@@ -22,7 +22,7 @@ import { SubtitleOverlay } from "@/components/SubtitleOverlay";
 import { SubtitleSettings } from "@/components/SubtitleSettings";
 import { useLiveTranscription, SUPPORTED_LANGUAGES } from "@/hooks/useLiveTranscription";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { PhoneOff, Mic, MicOff, Video, VideoOff, MoreVertical, FileText, PenTool, Copy, X, Languages } from "lucide-react";
+import { PhoneOff, Mic, MicOff, Video, VideoOff, MoreVertical, FileText, PenTool, Copy, X, Languages, Settings, Clock } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -296,10 +296,10 @@ function CallLayout({ roomID, username, onLeave }: { roomID: string, username: s
 
              {/* Mobile Overlay */}
              {isSidebarOpen && (
-                <div className="md:hidden fixed inset-0 z-[100] bg-white dark:bg-neutral-900 flex flex-col">
-                    <div className="flex justify-end p-2 border-b border-gray-200 dark:border-gray-800">
-                        <button onClick={() => setIsSidebarOpen(false)} className="p-2">
-                            <X className="w-6 h-6 text-gray-500" />
+                <div className="md:hidden fixed inset-0 z-[100] bg-neutral-950/80 backdrop-blur-xl flex flex-col animate-in fade-in zoom-in-95 duration-300">
+                    <div className="flex justify-end p-4 border-b border-white/10">
+                        <button onClick={() => setIsSidebarOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                            <X className="w-6 h-6 text-white" />
                         </button>
                     </div>
                     <div className="flex-1 overflow-hidden">
@@ -330,39 +330,41 @@ function SetupUI({ onJoin }: { onJoin: () => void }) {
     const { camera, isMute: isCamMute } = useCameraState();
 
     return (
-        <div className="w-screen h-screen bg-neutral-950 flex flex-col items-center justify-center text-white py-10 px-4">
-            <h1 className="text-3xl md:text-4xl font-bold mb-8 tracking-tight">Ready to join?</h1>
-            
-            <div className="w-full max-w-3xl bg-neutral-900 rounded-2xl overflow-hidden shadow-2xl border border-white/10 relative aspect-video flex items-center justify-center">
-                <VideoPreview />
+        <div className="w-screen h-screen bg-neutral-950 flex flex-col items-center justify-center text-white p-4 overflow-y-auto">
+            <div className="w-full max-w-3xl flex flex-col items-center">
+                <h1 className="text-2xl md:text-4xl font-bold mb-6 md:mb-8 tracking-tight text-center">Ready to join?</h1>
+                
+                <div className="w-full bg-neutral-900 rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative aspect-[4/3] md:aspect-video flex items-center justify-center group">
+                    <VideoPreview />
 
-                <div className="absolute bottom-6 left-0 right-0 gap-6 flex items-center justify-center">
-                    <button 
-                        onClick={() => camera.toggle()} 
-                        className={`p-4 rounded-full shadow-lg transition-all ${isCamMute ? 'bg-red-500 hover:bg-red-600' : 'bg-neutral-800 hover:bg-neutral-700 border border-white/10'}`}
-                    >
-                        {isCamMute ? <VideoOff size={24} /> : <Video size={24} />}
-                    </button>
-                    
-                    <button 
-                        onClick={() => microphone.toggle()} 
-                        className={`p-4 rounded-full shadow-lg transition-all ${isMicMute ? 'bg-red-500 hover:bg-red-600' : 'bg-neutral-800 hover:bg-neutral-700 border border-white/10'}`}
-                    >
-                        {isMicMute ? <MicOff size={24} /> : <Mic size={24} />}
-                    </button>
+                    <div className="absolute bottom-4 md:bottom-6 left-0 right-0 gap-4 md:gap-6 flex items-center justify-center opacity-90 group-hover:opacity-100 transition-opacity">
+                        <button 
+                            onClick={() => camera.toggle()} 
+                            className={`p-3 md:p-4 rounded-full shadow-xl transition-all ${isCamMute ? 'bg-red-500 hover:bg-red-600' : 'bg-neutral-800/90 backdrop-blur hover:bg-neutral-700 border border-white/10'}`}
+                        >
+                            {isCamMute ? <VideoOff size={20} className="md:w-6 md:h-6" /> : <Video size={20} className="md:w-6 md:h-6" />}
+                        </button>
+                        
+                        <button 
+                            onClick={() => microphone.toggle()} 
+                            className={`p-3 md:p-4 rounded-full shadow-xl transition-all ${isMicMute ? 'bg-red-500 hover:bg-red-600' : 'bg-neutral-800/90 backdrop-blur hover:bg-neutral-700 border border-white/10'}`}
+                        >
+                            {isMicMute ? <MicOff size={20} className="md:w-6 md:h-6" /> : <Mic size={20} className="md:w-6 md:h-6" />}
+                        </button>
 
-                    <div className="bg-neutral-800 p-2 rounded-full border border-white/10 flex items-center justify-center">
-                        <DeviceSettings />
+                        <div className="str-video__setup-device-settings-container">
+                            <DeviceSettings />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <button 
-                onClick={onJoin}
-                className="mt-10 bg-emerald-600 hover:bg-emerald-500 text-white px-12 py-4 rounded-xl font-bold text-lg shadow-lg shadow-emerald-600/20 transition-all hover:scale-105"
-            >
-                Join Meeting
-            </button>
+                <button 
+                    onClick={onJoin}
+                    className="mt-8 md:mt-10 bg-emerald-600 hover:bg-emerald-500 text-white px-8 md:px-12 py-3 md:py-4 rounded-2xl font-bold text-base md:text-lg shadow-lg shadow-emerald-600/20 transition-all hover:scale-105 active:scale-95 w-full md:w-auto"
+                >
+                    Join Meeting
+                </button>
+            </div>
         </div>
     );
 }

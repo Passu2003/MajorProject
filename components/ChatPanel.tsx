@@ -190,16 +190,20 @@ export function ChatPanel({ socket, username, roomID, messages, setMessages, onC
                 </div>
             </div>
 
-            <div className="p-3 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex gap-2">
+            <div className="p-3 pb-[calc(12px+env(safe-area-inset-bottom))] border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex gap-2">
                 <Input
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={handleKeyPress}
                     placeholder="Type a message..."
-                    className="flex-1 text-black dark:text-white bg-transparent border-neutral-300 dark:border-neutral-700"
+                    className="flex-1 h-11 md:h-10 text-base md:text-sm text-black dark:text-white bg-transparent border-neutral-300 dark:border-neutral-700 rounded-xl"
                 />
-                <Button size="icon" onClick={sendMessage} className="shrink-0 bg-emerald-600 hover:bg-emerald-700">
-                    <Send className="w-4 h-4" />
+                <Button 
+                    size="icon" 
+                    onClick={sendMessage} 
+                    className="shrink-0 w-11 h-11 md:w-10 md:h-10 bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md"
+                >
+                    <Send className="w-5 h-5 md:w-4 md:h-4" />
                 </Button>
             </div>
         </div>
