@@ -1,0 +1,5 @@
+﻿app/api/stream/test-transcript/route.ts(33,36): error TS2551: Property 'session_id' does not exist on type 'CallResponse'. Did you mean 'session'?
+app/api/stream/transcribe/route.ts(4,20): error TS7016: Could not find a declaration file for module 'fluent-ffmpeg'. 'C:/Users/HP/Downloads/MajorProject/MajorProject/node_modules/fluent-ffmpeg/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/fluent-ffmpeg` if it exists or add a new declaration (.d.ts) file containing `declare module 'fluent-ffmpeg';`
+app/api/stream/transcribe/route.ts(9,10): error TS2724: '"stream"' has no exported member named 'Pipeline'. Did you mean 'pipeline'?
+app/api/stream/transcribe/route.ts(69,31): error TS7006: Parameter 'err' implicitly has an 'any' type.
